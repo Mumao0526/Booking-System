@@ -85,7 +85,6 @@
 															<td>{{ record[3] }}</td>
 															<td>{{ record[4] }}</td>
 															<td>{{ record[5] }}</td>
-															<td><a href="{{ url_for('modify') }}" class="button">修改</a></td>
 														</tr>
 													{% endfor %}
 												{% else %}
@@ -94,12 +93,15 @@
 													</tr>
 												{% endif %}
 										</tbody>
-									</table>
-
-									<ul class="actions special">
-										<li><a href="{{ url_for('Administration') }}" class="button primary">回管理端首頁</a></li>
-									</ul>
-								</div>
+										</table>
+										<div style="text-align: center;">
+											<button type="submit" class="button">修改</button>
+										</div>
+										<br>
+										<ul class="actions special">
+											<li><a href="{{ url_for('Administration') }}" class="button primary">回管理端首頁</a></li>
+										</ul>
+									</div>
 							</section>
 						</div>
 					</div>
