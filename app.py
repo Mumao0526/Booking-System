@@ -155,8 +155,13 @@ def Adminsearch():
     有該筆資料導向AdminSearch.html網頁並列印出資料。
     """
     if "loginAdminId" in session:
-        if request.method == "POST":
-            uphone = request.form["Sphone"]
+        uphone = (
+            request.args.get("uphone")
+            if request.method == "GET"
+            else request.form.get("Sphone")
+        )
+
+        if uphone:
             if DBsearch(uphone) is None:
                 return render_template("ResultSuccessFailadmin.html")
             else:
@@ -174,41 +179,45 @@ def AdminAlldata():
     return render_template("msg.html", msg="請從主頁登入")
 
 
-@app.route("/adminedit", methods=["GET", "POST"])  # 管理端修改資料 網頁導向要更改
+@app.route("/adminedit", methods=["GET", "POST"])  # 管理端進入紀錄修改頁面
 def AdminEdit():
     """管理端修改資料庫中的資料"""
     if "loginAdminId" in session:
-        if request.method == "POST":
-            uname = request.form["uname"]
-            uphone = request.form["uphone"]
-            startDay = request.form["bookdate"]
-            endDay = request.form["bookEndDate"]
-            roomtype = request.form["roomtype"]
-            if (
-                uname == ""
-                or uphone == ""
-                or startDay == ""
-                or endDay == ""
-                or roomtype == ""
-            ):
-                return redirect(url_for("failed"))
-            else:
-                if DBedit(uname, startDay, endDay, uphone, roomtype):
-                    return redirect(url_for("Success"))
-                else:
-                    return redirect(url_for("failed"))
-        return render_template("AdminModify.html")
+        phone = request.args.get("phone")
+        if request.method == "GET":
+            return render_template("AdminModify.html", DBfatch=DBsearch(phone))
     return render_template("msg.html", msg="請從主頁登入")
+
+
+@app.route("/adminmodify", methods=["POST"])  # 管理端修改資料
+def admin_modify():
+    record_count = int(request.form.get("record_count", 0))
+    for i in range(1, record_count + 1):
+        iid = request.form.get(f"id{i}")
+        uname = request.form.get(f"uname{i}")
+        startDay = request.form.get(f"bookdate{i}")
+        endDay = request.form.get(f"bookEndDate{i}")
+        uphone = request.form.get(f"uphone{i}")
+        roomtype = request.form.get(f"roomtype{i}")
+        try:
+            DBedit(iid, uname, startDay, endDay, uphone, roomtype)
+        except Exception:
+            return redirect(url_for("failed"))
+
+    return redirect(url_for("Success"))
 
 
 @app.route("/modify", methods=["GET", "POST"])  # 客戶端修改資料 網頁導向要更改
 def modify():
-    uphone = request.args.get("data")
+    iid = request.args.get("id")
+    phone = request.args.get("phone")
+
     if request.method == "POST":
         uname = request.form["uname"]
         startDay = request.form["bookdate"]
         endDay = request.form["bookEndDate"]
         roomtype = request.form["roomtype"]
+        uphone = request.form["uphone"]
         if (
             uname == ""
             or uphone == ""
@@ -218,8 +227,8 @@ def modify():
         ):
             return redirect(url_for("failed"))
         else:
-            if DBedit(uname, startDay, endDay, uphone, roomtype):
+            if DBedit(iid, uname, startDay, endDay, uphone, roomtype):
                 return redirect(url_for("Success"))
             else:
                 return redirect(url_for("failed"))
-    return render_template("modify.html", DBfatch=DBsearch(uphone))
+    return render_template("modify.html", DBfatch=DBsearch(phone))
